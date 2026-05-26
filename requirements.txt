@@ -3,3 +3,5 @@ gunicorn
 sqlalchemy
 validators
 email-validator
+qrcode
+pillow

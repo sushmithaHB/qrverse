@@ -1,6 +1,7 @@
 flask
 gunicorn
 sqlalchemy
+flask-sqlalchemy
 validators
 email-validator
 qrcode

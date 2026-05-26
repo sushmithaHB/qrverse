@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        QRVerse
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- HERO -->
+
+        <div class="hero-section">
+
+            <h1>
+                QRVerse
+            </h1>
+
+            <p>
+                AI Powered Smart Dynamic QR Platform
+            </p>
+
+        </div>
+
+        <!-- MAIN -->
+
+        <div class="smart-generator">
+
+            <!-- LEFT -->
+
+            <div class="generator-left">
+
+                <h2>
+                    Smart QR Generator
+                </h2>
+
+                <p class="subtitle">
+
+                    Paste anything and generate
+                    premium dynamic QR codes.
+
+                </p>
+
+                <!-- INPUT -->
+
+                <textarea
+                    id="qr-input"
+                    placeholder="Paste website, phone, email, WiFi, UPI..."
+                    oninput="detectInputLive()"></textarea>
+
+                <!-- DETECTION -->
+
+                <div
+                    id="detection-box"
+                    class="detection-box hidden">
+
+                    <div class="detect-label">
+
+                        Detected Type
+
+                    </div>
+
+                    <div id="detected-type-live">
+
+                        —
+
+                    </div>
+
+                </div>
+
+                <!-- ACTIONS -->
+
+                <div
+                    id="smart-actions"
+                    class="smart-actions">
+
+                </div>
+
+                <!-- DESIGNER -->
+
+                <div class="designer-panel">
+
+                    <h3>
+                        QR Designer
+                    </h3>
+
+                    <div class="designer-grid">
+
+                        <!-- QR COLOR -->
+
+                        <div class="design-control">
+
+                            <label>
+                                QR Color
+                            </label>
+
+                            <input
+                                type="color"
+                                id="qr-color"
+                                value="#000000"
+                                onchange="generateQR(currentAction)">
+
+                        </div>
+
+                        <!-- BG COLOR -->
+
+                        <div class="design-control">
+
+                            <label>
+                                Background
+                            </label>
+
+                            <input
+                                type="color"
+                                id="bg-color"
+                                value="#ffffff"
+                                onchange="generateQR(currentAction)">
+
+                        </div>
+
+                    </div>
+
+                    <!-- SIZE -->
+
+                    <div class="design-control">
+
+                        <label>
+                            QR Size
+                        </label>
+
+                        <select
+                            id="qr-size"
+                            onchange="generateQR(currentAction)">
+
+                            <option value="6">
+                                Small
+                            </option>
+
+                            <option
+                                value="10"
+                                selected>
+
+                                Medium
+                            </option>
+
+                            <option value="14">
+                                Large
+                            </option>
+
+                            <option value="18">
+                                Ultra
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT -->
+
+            <div class="generator-right">
+
+                <div class="live-preview-card">
+
+                    <h3>
+                        Live QR Preview
+                    </h3>
+
+                    <img
+                        id="qr-image"
+                        class="live-qr-image">
+
+                    <div class="preview-status">
+
+                        <span class="status-dot"></span>
+
+                        Ready to Scan
+
+                    </div>
+
+                    <div class="dynamic-url-box">
+
+                        <small>
+                            Dynamic URL
+                        </small>
+
+                        <div id="dynamic-url">
+
+                            —
+
+                        </div>
+
+                    </div>
+
+                    <a
+                        id="download-btn"
+                        class="main-download-btn"
+                        download>
+
+                        Download QR
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- DASHBOARD -->
+
+        <div class="dashboard-section">
+
+            <h2>
+                Analytics Dashboard
+            </h2>
+
+            <!-- STATS -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <h3>
+                        {{ total_qrs }}
+                    </h3>
+
+                    <p>
+                        Total QRs
+                    </p>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <h3>
+                        {{ total_scans }}
+                    </h3>
+
+                    <p>
+                        Total Scans
+                    </p>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <h3>
+
+                        {% if qrs %}
+
+                            {{ qrs[0].qr_type }}
+
+                        {% else %}
+
+                            N/A
+
+                        {% endif %}
+
+                    </h3>
+
+                    <p>
+                        Latest QR Type
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- TABLE -->
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                QR
+                            </th>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                Scans
+                            </th>
+
+                            <th>
+                                Open
+                            </th>
+
+                            <th>
+                                Download
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for qr in qrs %}
+
+                        <tr>
+
+                            <td>
+
+                                <img
+                                    class="dashboard-qr"
+                                    src="{{ url_for(
+                                        'static',
+                                        filename='qr_codes/' + qr.short_id + '.png'
+                                    ) }}">
+
+                            </td>
+
+                            <td>
+
+                                {{ qr.qr_type }}
+
+                            </td>
+
+                            <td>
+
+                                {{ qr.scans }}
+
+                            </td>
+
+                            <td>
+
+                                <a
+                                    class="dashboard-btn open-btn"
+                                    href="/r/{{ qr.short_id }}"
+                                    target="_blank">
+
+                                    Open
+
+                                </a>
+
+                            </td>
+
+                            <td>
+
+                                <a
+                                    class="dashboard-btn download-btn"
+                                    href="{{ url_for(
+                                        'static',
+                                        filename='qr_codes/' + qr.short_id + '.png'
+                                    ) }}"
+                                    download>
+
+                                    Download
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPT -->
+
+    <script>
+
+        let currentAction = "website";
+
+        // ==========================
+        // DETECT INPUT
+        // ==========================
+
+        function detectInputLive() {
+
+            const input =
+                document.getElementById(
+                    "qr-input"
+                ).value.trim();
+
+            const box =
+                document.getElementById(
+                    "detection-box"
+                );
+
+            const typeText =
+                document.getElementById(
+                    "detected-type-live"
+                );
+
+            const actionsDiv =
+                document.getElementById(
+                    "smart-actions"
+                );
+
+            if (!input) {
+
+                box.classList.add(
+                    "hidden"
+                );
+
+                actionsDiv.innerHTML = "";
+
+                return;
+            }
+
+            box.classList.remove(
+                "hidden"
+            );
+
+            let detectedType =
+                "Plain Text";
+
+            let actions = [];
+
+            // PHONE
+
+            if (
+                /^[0-9]{10}$/.test(input)
+            ) {
+
+                detectedType =
+                    "Phone Number";
+
+                actions = [
+
+                    "call",
+
+                    "sms",
+
+                    "whatsapp"
+
+                ];
+            }
+
+            // EMAIL
+
+            else if (
+
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                .test(input)
+
+            ) {
+
+                detectedType =
+                    "Email Address";
+
+                actions = [
+
+                    "email"
+
+                ];
+            }
+
+            // WEBSITE
+
+            else if (
+
+                input.includes(".") ||
+
+                input.startsWith("http")
+
+            ) {
+
+                detectedType =
+                    "Website URL";
+
+                actions = [
+
+                    "website"
+
+                ];
+            }
+
+            typeText.innerText =
+                detectedType;
+
+            renderActions(
+                actions
+            );
+
+            currentAction =
+                actions[0] || "website";
+
+            generateQR(
+                currentAction
+            );
+
+        }
+
+        // ==========================
+        // ACTION BUTTONS
+        // ==========================
+
+        function renderActions(actions) {
+
+            const actionsDiv =
+                document.getElementById(
+                    "smart-actions"
+                );
+
+            actionsDiv.innerHTML = "";
+
+            actions.forEach(action => {
+
+                const btn =
+                    document.createElement(
+                        "button"
+                    );
+
+                btn.className =
+                    "smart-action-btn";
+
+                btn.innerText =
+                    action.toUpperCase();
+
+                btn.onclick = () => {
+
+                    currentAction =
+                        action;
+
+                    generateQR(action);
+
+                };
+
+                actionsDiv.appendChild(
+                    btn
+                );
+
+            });
+
+        }
+
+        // ==========================
+        // GENERATE QR
+        // ==========================
+
+        async function generateQR(action) {
+
+            const input =
+                document.getElementById(
+                    "qr-input"
+                ).value;
+
+            if (!input) return;
+
+            const qrColor =
+                document.getElementById(
+                    "qr-color"
+                ).value;
+
+            const bgColor =
+                document.getElementById(
+                    "bg-color"
+                ).value;
+
+            const qrSize =
+                document.getElementById(
+                    "qr-size"
+                ).value;
+
+            const response =
+                await fetch(
+
+                    "/live-preview",
+
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body: JSON.stringify({
+
+                            qrdata: input,
+
+                            action: action,
+
+                            qr_color: qrColor,
+
+                            bg_color: bgColor,
+
+                            qr_size: qrSize
+
+                        })
+
+                    }
+
+                );
+
+            const data =
+                await response.json();
+
+            document
+                .getElementById(
+                    "qr-image"
+                ).src =
+
+                    "/" + data.qr_image +
+                    "?t=" + new Date().getTime();
+
+            document
+                .getElementById(
+                    "download-btn"
+                ).href =
+
+                    "/" + data.qr_image;
+
+            document
+                .getElementById(
+                    "dynamic-url"
+                ).innerText =
+
+                    data.dynamic_url;
+
+        }
+
+    </script>
+
+</body>
+
+</html>

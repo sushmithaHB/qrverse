@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        QRVerse Dashboard
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>
+            QR Dashboard
+        </h1>
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <h2>
+                    {{ total_qrs }}
+                </h2>
+
+                <p>
+                    Total QRs
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h2>
+                    {{ total_scans }}
+                </h2>
+
+                <p>
+                    Total Scans
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- TABLE -->
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            QR
+                        </th>
+
+                        <th>
+                            QR ID
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Scans
+                        </th>
+
+                        <th>
+                            Created
+                        </th>
+
+                        <th>
+                            Open
+                        </th>
+
+                        <th>
+                            Download
+                        </th>
+
+                        <th>
+                            Edit
+                        </th>
+
+                        <th>
+                            Delete
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for qr in qrs %}
+
+                    <tr>
+
+                        <!-- QR IMAGE -->
+
+                        <td>
+
+                            <img
+                                class="dashboard-qr"
+                                src="{{ url_for(
+                                    'static',
+                                    filename='qr_codes/' + qr.short_id + '.png'
+                                ) }}">
+
+                        </td>
+
+                        <!-- QR ID -->
+
+                        <td>
+
+                            {{ qr.short_id }}
+
+                        </td>
+
+                        <!-- QR TYPE -->
+
+                        <td>
+
+                            {{ qr.qr_type }}
+
+                        </td>
+
+                        <!-- SCANS -->
+
+                        <td>
+
+                            {{ qr.scans }}
+
+                        </td>
+
+                        <!-- CREATED -->
+
+                        <td>
+
+                            {{ qr.created_at.strftime('%d %b %Y') }}
+
+                        </td>
+
+                        <!-- OPEN -->
+
+                        <td>
+
+                            <a
+                                class="dashboard-btn open-btn"
+                                href="/r/{{ qr.short_id }}"
+                                target="_blank">
+
+                                Open
+
+                            </a>
+
+                        </td>
+
+                        <!-- DOWNLOAD -->
+
+                        <td>
+
+                            <a
+                                class="dashboard-btn download-btn"
+                                href="{{ url_for(
+                                    'static',
+                                    filename='qr_codes/' + qr.short_id + '.png'
+                                ) }}"
+                                download>
+
+                                Download
+
+                            </a>
+
+                        </td>
+
+                        <!-- EDIT -->
+
+                        <td>
+
+                            <a
+                                class="dashboard-btn edit-btn"
+                                href="/edit/{{ qr.short_id }}">
+
+                                Edit
+
+                            </a>
+
+                        </td>
+
+                        <!-- DELETE -->
+
+                        <td>
+
+                            <a
+                                class="dashboard-btn delete-btn"
+                                href="/delete/{{ qr.short_id }}"
+                                onclick="return confirm('Delete this QR?')">
+
+                                Delete
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

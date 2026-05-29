@@ -1,179 +1,455 @@
-from flask import Flask, render_template, request, jsonify, redirect
-import os
-import qrcode
-import validators
-from datetime import datetime
-from email_validator import validate_email, EmailNotValidError
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify,
+    send_file
+)
+
 from models.qr_model import db, QRCode
+
+import os
+import io
+
+import qrcode
+import qrcode.image.svg
+
+from PIL import Image
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
 app = Flask(__name__)
 
-# ==========================
-# CONFIG
-# ==========================
+# =========================================
+# DATABASE
+# =========================================
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db.init_app(app)
 
-# 🚨 FIXED: MUST BE RENDER URL ONLY
-BASE_URL = "https://qrverse-pgco.onrender.com"
+# =========================================
+# QR FOLDER
+# =========================================
 
-QR_FOLDER = os.path.join("static", "qr_codes")
+QR_FOLDER = "static/qr_codes"
+
 os.makedirs(QR_FOLDER, exist_ok=True)
 
-# ==========================
-# HELPERS
-# ==========================
-
-def normalize_url(value):
-    value = value.strip()
-
-    if value and "." in value and not value.startswith(("http://", "https://")):
-        return "https://" + value
-
-    return value
-
-
-def detect_input_type(data):
-    try:
-        validate_email(data)
-        return "Email"
-    except:
-        pass
-
-    if validators.url(data):
-        return "URL"
-
-    return "Text"
-
+# =========================================
+# FORMAT QR DATA
+# =========================================
 
 def format_qr_data(data, action):
-    raw = data.strip()
 
-    if action == "call":
-        return f"tel:+91{raw}"
-    elif action == "sms":
-        return f"SMSTO:+91{raw}:"
+    raw = str(data).strip()
+
+    # WEBSITE
+    if action == "website":
+
+        if raw.startswith("http://") or raw.startswith("https://"):
+
+            return raw
+
+        return "https://" + raw
+
+    # WHATSAPP
     elif action == "whatsapp":
-        return f"https://wa.me/91{raw}"
+
+        number = raw.replace(" ", "").replace("+91", "")
+
+        return f"https://wa.me/91{number}"
+
+    # CALL
+    elif action == "call":
+
+        number = raw.replace(" ", "").replace("+91", "")
+
+        return f"tel:+91{number}"
+
+    # SMS
+    elif action == "sms":
+
+        number = raw.replace(" ", "").replace("+91", "")
+
+        return f"SMSTO:+91{number}:"
+
+    # EMAIL
     elif action == "email":
+
         return f"mailto:{raw}"
 
-    return normalize_url(raw)
+    # TEXT
+    return raw
 
-# ==========================
+# =========================================
+# CREATE QR IMAGE
+# =========================================
+
+def create_qr_image(
+    data,
+    fill_color,
+    back_color,
+    box_size
+):
+
+    qr = qrcode.QRCode(
+
+        version=1,
+
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+
+        box_size=box_size,
+
+        border=4
+    )
+
+    qr.add_data(data)
+
+    qr.make(fit=True)
+
+    img = qr.make_image(
+
+        fill_color=fill_color,
+
+        back_color=back_color
+
+    ).convert("RGB")
+
+    return img
+
+# =========================================
 # HOME
-# ==========================
+# =========================================
 
 @app.route("/")
 def home():
-    qrs = QRCode.query.order_by(QRCode.created_at.desc()).all()
-    return render_template("index.html", qrs=qrs)
 
-# ==========================
-# QR GENERATION (FIXED)
-# ==========================
+    qrs = QRCode.query.order_by(
+        QRCode.created_at.desc()
+    ).all()
+
+    return render_template(
+        "index.html",
+        qrs=qrs
+    )
+
+# =========================================
+# LIVE QR GENERATION
+# =========================================
 
 @app.route("/live-preview", methods=["POST"])
 def live_preview():
 
-    data = request.get_json()
+    try:
 
-    user_input = data.get("qrdata", "")
-    action = data.get("action", "website")
+        data = request.get_json()
 
-    if not user_input:
-        return jsonify({"error": "No input"})
+        user_input = data.get(
+            "qrdata",
+            ""
+        ).strip()
 
-    formatted = format_qr_data(user_input, action)
-
-    qr_entry = QRCode.query.filter_by(original_data=formatted).first()
-
-    if not qr_entry:
-        qr_entry = QRCode(
-            original_data=formatted,
-            qr_type=detect_input_type(user_input),
-            scans=0,
-            last_scanned=None
+        action = data.get(
+            "action",
+            "website"
         )
+
+        fill_color = data.get(
+            "fill_color",
+            "#000000"
+        )
+
+        back_color = data.get(
+            "back_color",
+            "#ffffff"
+        )
+
+        box_size = int(
+            data.get(
+                "box_size",
+                10
+            )
+        )
+
+        if not user_input:
+
+            return jsonify({
+                "error": "No input"
+            })
+
+        # FINAL QR CONTENT
+        final_qr_data = format_qr_data(
+            user_input,
+            action
+        )
+
+        print("\n====================")
+        print("QR CONTENT =", final_qr_data)
+        print("====================\n")
+
+        # SAVE DATABASE
+        qr_entry = QRCode(
+
+            original_data=final_qr_data,
+
+            qr_type=action
+        )
+
         db.session.add(qr_entry)
+
         db.session.commit()
 
-    # 🚨 CRITICAL FIX: ALWAYS USE RENDER URL
-    dynamic_url = f"{BASE_URL}/r/{qr_entry.short_id}"
+        # CREATE QR IMAGE
+        img = create_qr_image(
 
-    qr = qrcode.make(dynamic_url)
+            final_qr_data,
 
-    filename = f"{qr_entry.short_id}.png"
-    filepath = os.path.join(QR_FOLDER, filename)
+            fill_color,
 
-    qr.save(filepath)
+            back_color,
 
-    return jsonify({
-        "qr_image": f"static/qr_codes/{filename}",
-        "dynamic_url": dynamic_url
-    })
+            box_size
+        )
 
-# ==========================
-# REDIRECT (SAFE FIXED)
-# ==========================
+        filename = f"{qr_entry.short_id}.png"
 
-@app.route("/r/<short_id>")
-def redirect_qr(short_id):
+        filepath = os.path.join(
+            QR_FOLDER,
+            filename
+        )
 
-    qr_entry = QRCode.query.filter_by(short_id=short_id).first()
+        img.save(filepath)
 
-    if not qr_entry:
-        return "<h1>QR Not Found</h1>"
+        return jsonify({
 
-    qr_entry.scans += 1
-    qr_entry.last_scanned = datetime.utcnow()
-    db.session.commit()
+            "qr_image":
+            f"/static/qr_codes/{filename}",
 
-    data = qr_entry.original_data.strip()
+            "dynamic_url":
+            final_qr_data
+        })
 
-    if data.startswith("http://") or data.startswith("https://"):
-        return redirect(data, code=302)
+    except Exception as e:
 
-    if data.startswith("mailto:") or data.startswith("tel:"):
-        return redirect(data, code=302)
+        print("LIVE ERROR =", e)
 
-    return f"""
-    <h2>QR Content</h2>
-    <p>{data}</p>
-    <p><b>No redirect available</b></p>
-    """
+        return jsonify({
+            "error": str(e)
+        })
 
-# ==========================
-# DELETE QR
-# ==========================
+# =========================================
+# DOWNLOAD QR
+# =========================================
 
-@app.route("/delete/<short_id>")
-def delete_qr(short_id):
+@app.route("/download", methods=["POST"])
+def download_qr():
 
-    qr = QRCode.query.filter_by(short_id=short_id).first()
+    try:
 
-    if not qr:
-        return "<h1>QR Not Found</h1>"
+        data = request.get_json()
 
-    img_path = os.path.join(QR_FOLDER, f"{qr.short_id}.png")
+        qrdata = data.get(
+            "qrdata",
+            ""
+        ).strip()
 
-    if os.path.exists(img_path):
-        os.remove(img_path)
+        action = data.get(
+            "action",
+            "website"
+        )
 
-    db.session.delete(qr)
-    db.session.commit()
+        file_format = data.get(
+            "format",
+            "jpeg"
+        )
 
-    return "<script>alert('Deleted');window.location.href='/'</script>"
+        fill_color = data.get(
+            "fill_color",
+            "#000000"
+        )
 
-# ==========================
-# START (RENDER SAFE)
-# ==========================
+        back_color = data.get(
+            "back_color",
+            "#ffffff"
+        )
+
+        box_size = int(
+            data.get(
+                "box_size",
+                10
+            )
+        )
+
+        final_qr_data = format_qr_data(
+            qrdata,
+            action
+        )
+
+        # =====================================
+        # SVG
+        # =====================================
+
+        if file_format == "svg":
+
+            factory = qrcode.image.svg.SvgImage
+
+            img = qrcode.make(
+
+                final_qr_data,
+
+                image_factory=factory
+            )
+
+            img_io = io.BytesIO()
+
+            img.save(img_io)
+
+            img_io.seek(0)
+
+            return send_file(
+
+                img_io,
+
+                mimetype="image/svg+xml",
+
+                as_attachment=True,
+
+                download_name="qr.svg"
+            )
+
+        # =====================================
+        # NORMAL IMAGE QR
+        # =====================================
+
+        img = create_qr_image(
+
+            final_qr_data,
+
+            fill_color,
+
+            back_color,
+
+            box_size
+        )
+
+        img_io = io.BytesIO()
+
+        # =====================================
+        # PNG
+        # =====================================
+
+        if file_format == "png":
+
+            img.save(img_io, "PNG")
+
+            img_io.seek(0)
+
+            return send_file(
+
+                img_io,
+
+                mimetype="image/png",
+
+                as_attachment=True,
+
+                download_name="qr.png"
+            )
+
+        # =====================================
+        # PDF
+        # =====================================
+
+        elif file_format == "pdf":
+
+            pdf_io = io.BytesIO()
+
+            temp_path = "temp_qr.png"
+
+            img.save(temp_path)
+
+            c = canvas.Canvas(
+                pdf_io,
+                pagesize=letter
+            )
+
+            c.drawImage(
+
+                temp_path,
+
+                150,
+
+                400,
+
+                width=250,
+
+                height=250
+            )
+
+            c.save()
+
+            os.remove(temp_path)
+
+            pdf_io.seek(0)
+
+            return send_file(
+
+                pdf_io,
+
+                mimetype="application/pdf",
+
+                as_attachment=True,
+
+                download_name="qr.pdf"
+            )
+
+        # =====================================
+        # JPEG
+        # =====================================
+
+        else:
+
+            img.save(img_io, "JPEG")
+
+            img_io.seek(0)
+
+            return send_file(
+
+                img_io,
+
+                mimetype="image/jpeg",
+
+                as_attachment=True,
+
+                download_name="qr.jpeg"
+            )
+
+    except Exception as e:
+
+        print("DOWNLOAD ERROR =", e)
+
+        return jsonify({
+            "error": str(e)
+        })
+
+# =========================================
+# RUN
+# =========================================
 
 if __name__ == "__main__":
+
     with app.app_context():
+
         db.create_all()
 
-    port = int(os.environ.get("PORT", 10000))
+    app.run(
 
-    app.run(host="0.0.0.0", port=port)
+        host="0.0.0.0",
+
+        port=10000,
+
+        debug=True
+    )

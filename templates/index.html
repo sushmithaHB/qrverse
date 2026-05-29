@@ -2,656 +2,469 @@
 <html lang="en">
 
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRVerse</title>
 
-    <meta charset="UTF-8">
+<style>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+/* ================= BASE ================= */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
 
-    <title>
-        QRVerse
-    </title>
+body{
+    background:#0f172a;
+    color:white;
+    padding:30px;
+}
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}">
+.container{
+    max-width:1400px;
+    margin:auto;
+}
+
+/* ================= HEADER ================= */
+.header{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    margin-bottom:25px;
+    position:relative;
+}
+
+.header img{
+    position:absolute;
+    left:0;
+    width:120px;
+    height:70px;
+    object-fit:contain;
+    padding:6px;
+    border-radius:14px;
+    background:transparent;
+    filter:drop-shadow(0 0 8px rgba(0,0,0,0.6));
+}
+
+.title{
+    font-size:34px;
+    font-weight:900;
+    background:linear-gradient(135deg,#facc15,#ef4444);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* ================= LAYOUT ================= */
+.main{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:30px;
+}
+
+.card{
+    background:#1e293b;
+    padding:25px;
+    border-radius:25px;
+}
+
+/* ================= INPUT ================= */
+textarea{
+    width:100%;
+    min-height:150px;
+    border:none;
+    outline:none;
+    border-radius:15px;
+    padding:15px;
+    background:#334155;
+    color:white;
+}
+
+/* ================= DETECT ================= */
+.detect-badge{
+    display:inline-block;
+    margin-top:10px;
+    padding:6px 12px;
+    font-size:12px;
+    font-weight:700;
+    border-radius:999px;
+    background:linear-gradient(135deg,#7c3aed,#06b6d4,#ec4899);
+    color:white;
+}
+
+/* ================= ACTIONS ================= */
+.actions{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.action-btn{
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+    background:linear-gradient(135deg,#7c3aed,#ec4899);
+    color:white;
+    transition:0.2s;
+    font-size:13px;
+    min-width:90px;
+}
+
+.action-btn:hover{
+    opacity:0.85;
+    transform:scale(1.03);
+}
+
+/* ================= DESIGN ================= */
+.design-row{
+    display:flex;
+    gap:12px;
+    margin-top:20px;
+}
+
+.design-card{
+    flex:1;
+    padding:15px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#7c3aed,#06b6d4,#ec4899);
+    text-align:center;
+}
+
+/* ================= PREVIEW ================= */
+.preview-box{
+    width:280px;
+    height:280px;
+    margin:auto;
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    position:relative;
+}
+
+.preview-box img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    padding:12px;
+}
+
+/* ================= FIX 1: LIVE PREVIEW HEADING ================= */
+.preview-header{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.preview-header h3{
+    font-size:18px;
+    font-weight:800;
+    color:#e2e8f0;
+}
+
+/* ================= FIX 2: CENTER LABEL AT BOTTOM ================= */
+.preview-label{
+    position:absolute;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,0.7);
+    padding:6px 12px;
+    font-size:12px;
+    border-radius:8px;
+    font-weight:600;
+    color:white;
+}
+
+/* ================= URL ================= */
+.url-box{
+    margin-top:12px;
+    background:#334155;
+    padding:10px;
+    border-radius:10px;
+    font-size:12px;
+    word-break:break-word;
+}
+
+/* ================= BUTTON ================= */
+button{
+    margin-top:12px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#7c3aed,#ec4899);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+}
+
+/* ================= DOWNLOAD ================= */
+.download-section{
+    margin-top:15px;
+}
+
+.download-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.download-buttons button{
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+    background:linear-gradient(135deg,#7c3aed,#ec4899);
+    color:white;
+    transition:0.2s;
+}
+
+.download-buttons button:hover{
+    opacity:0.85;
+    transform:scale(1.03);
+}
+
+</style>
 
 </head>
 
 <body>
 
-    <div class="container">
+<!-- HEADER -->
+<div class="header">
 
-        <!-- HERO -->
+<img src="{{ url_for('static', filename='logos/yr-logo.png') }}">
 
-        <div class="hero-section">
+<div class="title">QRVerse</div>
 
-            <h1>
-                QRVerse
-            </h1>
+</div>
 
-            <p>
-                AI Powered Smart Dynamic QR Platform
-            </p>
+<div class="container">
 
-        </div>
+<div class="main">
 
-        <!-- MAIN -->
+<!-- LEFT -->
+<div class="card">
 
-        <div class="smart-generator">
+<h3>Smart QR Generator</h3>
 
-            <!-- LEFT -->
+<textarea id="qr-input"
+placeholder="Enter text / website / phone"
+oninput="detectInput()"></textarea>
 
-            <div class="generator-left">
+<div id="detected-type" class="detect-badge">—</div>
 
-                <h2>
-                    Smart QR Generator
-                </h2>
+<div id="actions" class="actions"></div>
 
-                <p class="subtitle">
+<!-- DESIGN -->
+<div class="design-row">
 
-                    Paste anything and generate
-                    premium dynamic QR codes.
+<div class="design-card">
+<label>QR Color</label><br>
+<input type="color" id="fill-color" value="#000000">
+</div>
 
-                </p>
+<div class="design-card">
+<label>Background</label><br>
+<input type="color" id="back-color" value="#ffffff">
+</div>
 
-                <!-- INPUT -->
+</div>
 
-                <textarea
-                    id="qr-input"
-                    placeholder="Paste website, phone, email, WiFi, UPI..."
-                    oninput="detectInputLive()"></textarea>
+</div>
 
-                <!-- DETECTION -->
+<!-- RIGHT -->
+<div class="card">
 
-                <div
-                    id="detection-box"
-                    class="detection-box hidden">
+<!-- FIXED LIVE PREVIEW HEADER -->
+<div class="preview-header">
+    <h3>Live Preview</h3>
+</div>
 
-                    <div class="detect-label">
+<div class="preview-box">
 
-                        Detected Type
+<img id="qr-image"
+src="{{ url_for('static', filename='preview/company-preview.png') }}">
 
-                    </div>
+<!-- FIXED LABEL POSITION -->
+<div class="preview-label" id="preview-label">YR Website</div>
 
-                    <div id="detected-type-live">
+</div>
 
-                        —
+<button onclick="openURL()">Dynamic URL</button>
 
-                    </div>
+<div id="dynamic-url" class="url-box">—</div>
 
-                </div>
+<!-- DOWNLOAD -->
+<div class="download-section">
 
-                <!-- ACTIONS -->
+<h3>Download QR</h3>
 
-                <div
-                    id="smart-actions"
-                    class="smart-actions">
+<div class="download-buttons">
 
-                </div>
+<button onclick="downloadQR('jpeg')">JPEG</button>
+<button onclick="downloadQR('png')">PNG</button>
+<button onclick="downloadQR('svg')">SVG</button>
+<button onclick="downloadQR('pdf')">PDF</button>
 
-                <!-- DESIGNER -->
+</div>
 
-                <div class="designer-panel">
+</div>
 
-                    <h3>
-                        QR Designer
-                    </h3>
+</div>
 
-                    <div class="designer-grid">
+</div>
 
-                        <!-- QR COLOR -->
+<script>
 
-                        <div class="design-control">
+let currentAction="text";
+let latestURL="";
 
-                            <label>
-                                QR Color
-                            </label>
+/* ================= DETECT ================= */
+function detectInput(){
 
-                            <input
-                                type="color"
-                                id="qr-color"
-                                value="#000000"
-                                onchange="generateQR(currentAction)">
+const input=document.getElementById("qr-input").value.trim();
+const badge=document.getElementById("detected-type");
 
-                        </div>
+if(!input){
+badge.innerText="—";
+document.getElementById("actions").innerHTML="";
+return;
+}
 
-                        <!-- BG COLOR -->
+let actions=["text"];
+let type="Text";
 
-                        <div class="design-control">
+if(/^[0-9+\s\-()]{7,15}$/.test(input)){
+type="Phone";
+actions=["call","sms","whatsapp"];
+}
+else if(input.includes("@")){
+type="Email";
+actions=["email"];
+}
+else if(input.includes(".")){
+type="Website";
+actions=["website"];
+}
 
-                            <label>
-                                Background
-                            </label>
+badge.innerText=type;
 
-                            <input
-                                type="color"
-                                id="bg-color"
-                                value="#ffffff"
-                                onchange="generateQR(currentAction)">
+renderActions(actions);
+currentAction=actions[0];
 
-                        </div>
+generateQR();
 
-                    </div>
+}
 
-                    <!-- SIZE -->
+/* ================= ACTIONS ================= */
+function renderActions(actions){
 
-                    <div class="design-control">
+const div=document.getElementById("actions");
+div.innerHTML="";
 
-                        <label>
-                            QR Size
-                        </label>
+actions.forEach(a=>{
 
-                        <select
-                            id="qr-size"
-                            onchange="generateQR(currentAction)">
+const btn=document.createElement("button");
+btn.className="action-btn";
+btn.innerText=a.toUpperCase();
 
-                            <option value="6">
-                                Small
-                            </option>
+btn.onclick=()=>{
+currentAction=a;
+generateQR();
+};
 
-                            <option
-                                value="10"
-                                selected>
+div.appendChild(btn);
 
-                                Medium
-                            </option>
+});
 
-                            <option value="14">
-                                Large
-                            </option>
+}
 
-                            <option value="18">
-                                Ultra
-                            </option>
+/* ================= QR GENERATION ================= */
+async function generateQR(){
 
-                        </select>
+const input=document.getElementById("qr-input").value.trim();
+if(!input) return;
 
-                    </div>
+const res=await fetch("/live-preview",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+qrdata:input,
+action:currentAction,
+fill_color:document.getElementById("fill-color").value,
+back_color:document.getElementById("back-color").value
+})
+});
 
-                </div>
+const data=await res.json();
 
-            </div>
+document.getElementById("qr-image").src=data.qr_image+"?t="+Date.now();
 
-            <!-- RIGHT -->
+document.getElementById("preview-label").style.display="none";
 
-            <div class="generator-right">
+latestURL=data.dynamic_url;
 
-                <div class="live-preview-card">
+document.getElementById("dynamic-url").innerText=latestURL;
 
-                    <h3>
-                        Live QR Preview
-                    </h3>
+}
 
-                    <img
-                        id="qr-image"
-                        class="live-qr-image">
+/* ================= OPEN URL ================= */
+function openURL(){
 
-                    <div class="preview-status">
+if(!latestURL){
+alert("No URL generated");
+return;
+}
 
-                        <span class="status-dot"></span>
+window.open(latestURL,"_blank");
 
-                        Ready to Scan
+}
 
-                    </div>
+/* ================= DOWNLOAD ================= */
+function downloadQR(format="jpeg"){
 
-                    <div class="dynamic-url-box">
+const input=document.getElementById("qr-input").value.trim();
 
-                        <small>
-                            Dynamic URL
-                        </small>
+if(!input){
+alert("Enter QR data first");
+return;
+}
 
-                        <div id="dynamic-url">
+fetch("/download",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+qrdata:input,
+action:currentAction,
+format:format
+})
+})
+.then(res=>res.blob())
+.then(blob=>{
 
-                            —
+const url=URL.createObjectURL(blob);
 
-                        </div>
+const a=document.createElement("a");
+a.href=url;
+a.download="qr." + format;
 
-                    </div>
+document.body.appendChild(a);
+a.click();
+a.remove();
 
-                    <a
-                        id="download-btn"
-                        class="main-download-btn"
-                        download>
+URL.revokeObjectURL(url);
 
-                        Download QR
+});
 
-                    </a>
+}
 
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- DASHBOARD -->
-
-        <div class="dashboard-section">
-
-            <h2>
-                Analytics Dashboard
-            </h2>
-
-            <!-- STATS -->
-
-            <div class="stats-grid">
-
-                <div class="stat-card">
-
-                    <h3>
-                        {{ total_qrs }}
-                    </h3>
-
-                    <p>
-                        Total QRs
-                    </p>
-
-                </div>
-
-                <div class="stat-card">
-
-                    <h3>
-                        {{ total_scans }}
-                    </h3>
-
-                    <p>
-                        Total Scans
-                    </p>
-
-                </div>
-
-                <div class="stat-card">
-
-                    <h3>
-
-                        {% if qrs %}
-
-                            {{ qrs[0].qr_type }}
-
-                        {% else %}
-
-                            N/A
-
-                        {% endif %}
-
-                    </h3>
-
-                    <p>
-                        Latest QR Type
-                    </p>
-
-                </div>
-
-            </div>
-
-            <!-- TABLE -->
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                QR
-                            </th>
-
-                            <th>
-                                Type
-                            </th>
-
-                            <th>
-                                Scans
-                            </th>
-
-                            <th>
-                                Open
-                            </th>
-
-                            <th>
-                                Download
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        {% for qr in qrs %}
-
-                        <tr>
-
-                            <td>
-
-                                <img
-                                    class="dashboard-qr"
-                                    src="{{ url_for(
-                                        'static',
-                                        filename='qr_codes/' + qr.short_id + '.png'
-                                    ) }}">
-
-                            </td>
-
-                            <td>
-
-                                {{ qr.qr_type }}
-
-                            </td>
-
-                            <td>
-
-                                {{ qr.scans }}
-
-                            </td>
-
-                            <td>
-
-                                <a
-                                    class="dashboard-btn open-btn"
-                                    href="/r/{{ qr.short_id }}"
-                                    target="_blank">
-
-                                    Open
-
-                                </a>
-
-                            </td>
-
-                            <td>
-
-                                <a
-                                    class="dashboard-btn download-btn"
-                                    href="{{ url_for(
-                                        'static',
-                                        filename='qr_codes/' + qr.short_id + '.png'
-                                    ) }}"
-                                    download>
-
-                                    Download
-
-                                </a>
-
-                            </td>
-
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- SCRIPT -->
-
-    <script>
-
-        let currentAction = "website";
-
-        // ==========================
-        // DETECT INPUT
-        // ==========================
-
-        function detectInputLive() {
-
-            const input =
-                document.getElementById(
-                    "qr-input"
-                ).value.trim();
-
-            const box =
-                document.getElementById(
-                    "detection-box"
-                );
-
-            const typeText =
-                document.getElementById(
-                    "detected-type-live"
-                );
-
-            const actionsDiv =
-                document.getElementById(
-                    "smart-actions"
-                );
-
-            if (!input) {
-
-                box.classList.add(
-                    "hidden"
-                );
-
-                actionsDiv.innerHTML = "";
-
-                return;
-            }
-
-            box.classList.remove(
-                "hidden"
-            );
-
-            let detectedType =
-                "Plain Text";
-
-            let actions = [];
-
-            // PHONE
-
-            if (
-                /^[0-9]{10}$/.test(input)
-            ) {
-
-                detectedType =
-                    "Phone Number";
-
-                actions = [
-
-                    "call",
-
-                    "sms",
-
-                    "whatsapp"
-
-                ];
-            }
-
-            // EMAIL
-
-            else if (
-
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                .test(input)
-
-            ) {
-
-                detectedType =
-                    "Email Address";
-
-                actions = [
-
-                    "email"
-
-                ];
-            }
-
-            // WEBSITE
-
-            else if (
-
-                input.includes(".") ||
-
-                input.startsWith("http")
-
-            ) {
-
-                detectedType =
-                    "Website URL";
-
-                actions = [
-
-                    "website"
-
-                ];
-            }
-
-            typeText.innerText =
-                detectedType;
-
-            renderActions(
-                actions
-            );
-
-            currentAction =
-                actions[0] || "website";
-
-            generateQR(
-                currentAction
-            );
-
-        }
-
-        // ==========================
-        // ACTION BUTTONS
-        // ==========================
-
-        function renderActions(actions) {
-
-            const actionsDiv =
-                document.getElementById(
-                    "smart-actions"
-                );
-
-            actionsDiv.innerHTML = "";
-
-            actions.forEach(action => {
-
-                const btn =
-                    document.createElement(
-                        "button"
-                    );
-
-                btn.className =
-                    "smart-action-btn";
-
-                btn.innerText =
-                    action.toUpperCase();
-
-                btn.onclick = () => {
-
-                    currentAction =
-                        action;
-
-                    generateQR(action);
-
-                };
-
-                actionsDiv.appendChild(
-                    btn
-                );
-
-            });
-
-        }
-
-        // ==========================
-        // GENERATE QR
-        // ==========================
-
-        async function generateQR(action) {
-
-            const input =
-                document.getElementById(
-                    "qr-input"
-                ).value;
-
-            if (!input) return;
-
-            const qrColor =
-                document.getElementById(
-                    "qr-color"
-                ).value;
-
-            const bgColor =
-                document.getElementById(
-                    "bg-color"
-                ).value;
-
-            const qrSize =
-                document.getElementById(
-                    "qr-size"
-                ).value;
-
-            const response =
-                await fetch(
-
-                    "/live-preview",
-
-                    {
-
-                        method: "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-
-                        },
-
-                        body: JSON.stringify({
-
-                            qrdata: input,
-
-                            action: action,
-
-                            qr_color: qrColor,
-
-                            bg_color: bgColor,
-
-                            qr_size: qrSize
-
-                        })
-
-                    }
-
-                );
-
-            const data =
-                await response.json();
-
-            document
-                .getElementById(
-                    "qr-image"
-                ).src =
-
-                    "/" + data.qr_image +
-                    "?t=" + new Date().getTime();
-
-            document
-                .getElementById(
-                    "download-btn"
-                ).href =
-
-                    "/" + data.qr_image;
-
-            document
-                .getElementById(
-                    "dynamic-url"
-                ).innerText =
-
-                    data.dynamic_url;
-
-        }
-
-    </script>
+</script>
 
 </body>
-
 </html>
